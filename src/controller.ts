@@ -1,17 +1,18 @@
+import Tokopedia from "./tokopedia/Tokopedia";
 import Service from "./service";
 
 export default async function controller(browserInstance: Promise<any>) {
   const browser = await browserInstance;
 
-  const session = new Service({
+  const tokped = new Tokopedia({
     browser,
-    url: 'https://tokopedia.com',
     is2faEnabled: true,
     credentials: {
       username: 'kadek.pradnyana@gmail.com',
       password: 'PrathnanDesign88!@'
     }
   });
+  const session = new Service(tokped);
   const page = await session.boot();
 
   if (page) {
