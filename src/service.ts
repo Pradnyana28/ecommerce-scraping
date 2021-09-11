@@ -10,7 +10,6 @@ export default class Service {
 
   public async boot() {
     const CI = this.classInjector;
-
     await CI.checkSession();
 
     let page = await CI.browser.newPage();
@@ -18,11 +17,7 @@ export default class Service {
     try {
       await page.goto(CI.url);
       await page.waitForTimeout(1000);
-
-      CI.takeScreenshot(page, 'first-access');
-
       await CI.login(page);
-
       return page;
     } catch (err) {
       console.log('The error', err);
