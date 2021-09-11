@@ -8,9 +8,9 @@ export default async function controller(browserInstance: Promise<any>) {
     browser,
     is2faEnabled: true,
     credentials: {
-      username: 'kadek.pradnyana@gmail.com',
-      password: 'PrathnanDesign88!@'
-    }
+      username: 'kadek.pradnyana@gmail.com'
+    },
+    tenantName: 'my-tenant'
   });
   const session = new Service(tokped);
   const page = await session.boot();

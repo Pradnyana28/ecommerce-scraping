@@ -7,6 +7,7 @@ export interface ISites {
   browser: Browser;
   url: string;
   is2faEnabled?: boolean;
+  tenantName: string;
 }
 
 export interface IService extends ISites {
@@ -20,8 +21,7 @@ export interface IService extends ISites {
 
 export interface ISitesWithCredentialsOptions extends ISites {
   credentials: {
-    username: string;
-    password: string;
+    username?: string;
   }
 }
 
@@ -30,6 +30,7 @@ export default abstract class Sites {
   url: string;
   browser: Browser;
   is2faEnabled: boolean;
+  tenantName: string;
 
   private cookiesPath() {
     return `./cookies/${this.url.replace('https://', '')}`;
@@ -45,7 +46,7 @@ export default abstract class Sites {
       fs.mkdirSync(path.resolve(this.cookiesPath()));
       // screenshots
       fs.mkdirSync(path.resolve(this.screenshotPath()));
-      fs.mkdirSync(path.resolve(`${this.screenshotPath()}/${this.credentials.username}`));
+      fs.mkdirSync(path.resolve(`${this.screenshotPath()}/${this.tenantName}`));
     } catch (err: any) {
       // all setted up
     }
@@ -59,13 +60,14 @@ export default abstract class Sites {
     this.credentials = options.credentials;
     this.is2faEnabled = options.is2faEnabled ?? false;
     this.url = options.url;
+    this.tenantName = options.tenantName;
 
     this.prepareDirectory();
   }
 
   async checkSession(): Promise<void> {
     try {
-      const signedInSession = fs.readFileSync(path.resolve(`${this.cookiesPath()}/${this.credentials.username}-cookies.json`));
+      const signedInSession = fs.readFileSync(path.resolve(`${this.cookiesPath()}/${this.tenantName}-cookies.json`));
 
       // Check if session exist
       if (signedInSession.length) {
@@ -89,12 +91,12 @@ export default abstract class Sites {
   }
 
   async takeScreenshot(page: Page, name: string) {
-    await page.screenshot({ path: path.resolve(`${this.screenshotPath()}/${this.credentials.username}/${name}.jpg`) });
+    await page.screenshot({ path: path.resolve(`${this.screenshotPath()}/${this.tenantName}/${name}.jpg`) });
   }
 
   async saveCookies(page: Page) {
     const cookies = await page.cookies();
-    fs.writeFile(path.resolve(`${this.cookiesPath()}/${this.credentials.username}-cookies.json`), JSON.stringify(cookies, null, 2), () => {
+    fs.writeFile(path.resolve(`${this.cookiesPath()}/${this.tenantName}-cookies.json`), JSON.stringify(cookies, null, 2), () => {
       console.log('Cookies saved!')
     });
   }
