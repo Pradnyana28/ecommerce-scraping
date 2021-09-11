@@ -18,5 +18,6 @@ export default async function controller(browserInstance: Promise<any>) {
   if (page) {
     // do whatever you want
     console.log('START HACKING')
+    await session.storeDashboard(page);
   }
 }

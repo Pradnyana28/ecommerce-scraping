@@ -10,7 +10,7 @@ export interface ISites {
   tenantName: string;
 }
 
-export interface IService extends ISites {
+export interface ISitesObject extends ISites {
   takeScreenshot: (page: Page, name: string) => void;
   saveCookies: (page: Page) => void;
   ioInput: (question: string) => Promise<string>;
@@ -44,8 +44,15 @@ export default abstract class Sites {
     try {
       // cookies
       fs.mkdirSync(path.resolve(this.cookiesPath()));
-      // screenshots
+    } catch (err: any) {
+      // all setted up
+    }
+    try {
       fs.mkdirSync(path.resolve(this.screenshotPath()));
+    } catch (err: any) {
+      // all setted up
+    }
+    try {
       fs.mkdirSync(path.resolve(`${this.screenshotPath()}/${this.tenantName}`));
     } catch (err: any) {
       // all setted up

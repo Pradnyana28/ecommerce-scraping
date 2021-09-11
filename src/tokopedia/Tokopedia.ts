@@ -39,6 +39,8 @@ export default class Tokopedia extends Sites {
 
       await page.click('button[data-unify=Button][type=submit]');
 
+      this.takeScreenshot(page, 'credentials-finisedh');
+
       if (this.is2faEnabled) {
         await this.request2faCode(page);
       }
@@ -66,5 +68,14 @@ export default class Tokopedia extends Sites {
     this.saveCookies(page);
 
     this.takeScreenshot(page, '2fa-finish-logged-in');
+  }
+
+  async storeHomepage(page: Page) {
+    await page.goto('https://seller.tokopedia.com/home');
+    await this.takeScreenshot(page, 'store-home');
+  }
+
+  async manageProductPage(page: Page) {
+    await page.goto('https://seller.tokopedia.com/manage-product');
   }
 }

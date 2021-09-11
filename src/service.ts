@@ -1,5 +1,10 @@
-import { IService } from "./interface/Sites";
+import { Page } from "puppeteer";
+import { ISitesObject } from "./interface/Sites";
 
+interface IService extends ISitesObject {
+  storeHomepage: (page: Page) => Promise<void>;
+  manageProductPage: (page: Page) => Promise<void>;
+}
 
 export default class Service {
   private classInjector: IService;
@@ -24,6 +29,12 @@ export default class Service {
       return undefined;
     }
   }
+
+  public async storeDashboard(page: Page) {
+    this.classInjector.storeHomepage(page);
+  }
+
+  public async allProducts() { }
 }
 
 // fs.writeFileSync(path.resolve('./tokped.html'), pageContent);
