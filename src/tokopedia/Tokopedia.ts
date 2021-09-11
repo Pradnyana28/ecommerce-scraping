@@ -26,7 +26,7 @@ export default class Tokopedia extends Sites {
       // Click login button at the top right of the page
       await page.click('button[data-testid=btnHeaderLogin]');
 
-      const userUsername = this.credentials.username ?? await this.ioInput('Please input your username: => ');
+      const userUsername = this.credentials?.username ?? await this.ioInput('Please input your username: => ');
       await page.waitForSelector('input[id=email-phone]');
       await page.focus('input[id=email-phone]');
       await page.type('input[id=email-phone]', userUsername);

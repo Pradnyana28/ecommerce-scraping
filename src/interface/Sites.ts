@@ -20,7 +20,7 @@ export interface ISitesObject extends ISites {
 }
 
 export interface ISitesWithCredentialsOptions extends ISites {
-  credentials: {
+  credentials?: {
     username?: string;
   }
 }

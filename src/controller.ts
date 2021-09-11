@@ -7,9 +7,6 @@ export default async function controller(browserInstance: Promise<any>) {
   const tokped = new Tokopedia({
     browser,
     is2faEnabled: true,
-    credentials: {
-      username: 'kadek.pradnyana@gmail.com'
-    },
     tenantName: 'my-tenant'
   });
   const session = new Service(tokped);
