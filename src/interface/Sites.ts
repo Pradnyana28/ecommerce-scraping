@@ -31,6 +31,29 @@ export default abstract class Sites {
   browser: Browser;
   is2faEnabled: boolean;
 
+  private cookiesPath() {
+    return `./cookies/${this.url.replace('https://', '')}`;
+  }
+
+  private screenshotPath() {
+    return `./screenshots/${this.url.replace('https://', '')}`;
+  }
+
+  private prepareDirectory() {
+    try {
+      // cookies
+      fs.mkdirSync(path.resolve(this.cookiesPath()));
+      // screenshots
+      fs.mkdirSync(path.resolve(this.screenshotPath()));
+      fs.mkdirSync(path.resolve(`${this.screenshotPath()}/${this.credentials.username}`));
+    } catch (err: any) {
+      // all setted up
+    }
+  }
+
+  abstract login(page: Page): Promise<void>;
+  abstract request2faCode(page: Page): Promise<void>;
+
   constructor(options: ISitesWithCredentialsOptions) {
     this.browser = options.browser;
     this.credentials = options.credentials;
@@ -40,46 +63,38 @@ export default abstract class Sites {
     this.prepareDirectory();
   }
 
-  abstract login(page: Page): Promise<void>;
-  abstract request2faCode(page: Page): Promise<void>;
-
   async checkSession(): Promise<void> {
-    const signedInSession = fs.readFileSync(path.resolve(`./cookies/${this.credentials.username}-cookies.json`));
-
-    // Check if session exist
-    if (signedInSession.length) {
-      const cookies = JSON.parse(signedInSession.toString());
-
-      // Set the cookies
-      this.browser.on('targetchanged', async (target: Target) => {
-        const targetPage = await target.page();
-        if (targetPage) {
-          await targetPage.setCookie(...cookies);
-          // const client = await targetPage.target().createCDPSession();
-          // await client?.send('Runtime.evaluate', {
-          //   expression: `localStorage.setItem('hello', 'world')`,
-          // });
-        }
-      });
-    }
-  }
-
-  prepareDirectory() {
     try {
-      // prepare directory
-      fs.mkdirSync(path.resolve(`./screenshots/${this.credentials.username}`));
-    } catch (err: any) {
-      // all setted up
+      const signedInSession = fs.readFileSync(path.resolve(`${this.cookiesPath()}/${this.credentials.username}-cookies.json`));
+
+      // Check if session exist
+      if (signedInSession.length) {
+        const cookies = JSON.parse(signedInSession.toString());
+
+        // Set the cookies
+        this.browser.on('targetchanged', async (target: Target) => {
+          const targetPage = await target.page();
+          if (targetPage) {
+            await targetPage.setCookie(...cookies);
+            // const client = await targetPage.target().createCDPSession();
+            // await client?.send('Runtime.evaluate', {
+            //   expression: `localStorage.setItem('hello', 'world')`,
+            // });
+          }
+        });
+      }
+    } catch (err) {
+      console.log('No session')
     }
   }
 
   async takeScreenshot(page: Page, name: string) {
-    await page.screenshot({ path: path.resolve(`./screenshots/${this.credentials.username}/${name}.jpg`) });
+    await page.screenshot({ path: path.resolve(`${this.screenshotPath()}/${this.credentials.username}/${name}.jpg`) });
   }
 
   async saveCookies(page: Page) {
     const cookies = await page.cookies();
-    fs.writeFile(path.resolve(`./cookies/${this.credentials.username}-cookies.json`), JSON.stringify(cookies, null, 2), () => {
+    fs.writeFile(path.resolve(`${this.cookiesPath()}/${this.credentials.username}-cookies.json`), JSON.stringify(cookies, null, 2), () => {
       console.log('Cookies saved!')
     });
   }
