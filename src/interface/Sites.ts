@@ -120,4 +120,10 @@ export default abstract class Sites {
       });
     });
   }
+
+  async type(page: Page, element: string, text: string) {
+    await page.waitForSelector(element);
+    await page.focus(element);
+    await page.type(element, text);
+  }
 }

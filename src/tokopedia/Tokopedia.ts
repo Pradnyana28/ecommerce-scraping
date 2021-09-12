@@ -11,11 +11,30 @@ export default class Tokopedia extends Sites {
     } as ISitesWithCredentialsOptions);
   }
 
+  get elementIDs() {
+    return {
+      fields: {
+        username: 'input[id=email-phone]',
+        password: 'input[id=password-input]',
+        '2faCode': 'input[autocomplete=one-time-code]'
+      },
+      buttons: {
+        usernameSubmit: 'button[id=email-phone-submit]',
+        loginSubmit: 'button[data-unify=Button][type=submit]',
+        loginAction: 'button[data-testid=btnHeaderLogin]',
+        request2faAction: 'div[data-unify=Card][aria-label=sms]'
+      },
+      section: {
+        profileHeader: 'div[id=my-profile-header]'
+      }
+    }
+  }
+
   async login(page: Page): Promise<void> {
     let signedIn = false;
     // Check after setting cookies if the login button still exist
     try {
-      await page.waitForSelector("button[data-testid=btnHeaderLogin]", {
+      await page.waitForSelector(this.elementIDs.buttons.loginAction, {
         timeout: 2000
       });
     } catch (err) {
@@ -23,21 +42,16 @@ export default class Tokopedia extends Sites {
     }
 
     if (!signedIn) {
-      // Click login button at the top right of the page
-      await page.click('button[data-testid=btnHeaderLogin]');
+      // Click login action button at the top right of the page
+      await page.click(this.elementIDs.buttons.loginAction);
 
       const userUsername = this.credentials?.username ?? await this.ioInput('Please input your username: => ');
-      await page.waitForSelector('input[id=email-phone]');
-      await page.focus('input[id=email-phone]');
-      await page.type('input[id=email-phone]', userUsername);
-      await page.click('button[id=email-phone-submit]');
-      // Wait for password field sliding down
       const userPassword = await this.ioInput('Please input your password: => ');
-      await page.waitForSelector("input[id=password-input]");
-      await page.focus('input[id=password-input]');
-      await page.type('input[id=password-input]', userPassword);
 
-      await page.click('button[data-unify=Button][type=submit]');
+      await this.type(page, this.elementIDs.fields.username, userUsername);
+      await page.click(this.elementIDs.buttons.usernameSubmit);
+      await this.type(page, this.elementIDs.fields.password, userPassword);
+      await page.click(this.elementIDs.buttons.loginSubmit);
 
       this.takeScreenshot(page, 'credentials-finisedh');
 
@@ -48,26 +62,19 @@ export default class Tokopedia extends Sites {
   }
 
   async request2faCode(page: Page): Promise<void> {
-    await page.waitForSelector('div[data-unify=Card][aria-label=sms]');
+    await page.waitForSelector(this.elementIDs.buttons.request2faAction);
     // SMS proofing screen
     this.takeScreenshot(page, '2fa-request');
 
-    await page.click('div[data-unify=Card][aria-label=sms]');
-    await page.waitForSelector('input[autocomplete=one-time-code]');
-
+    await page.click(this.elementIDs.buttons.request2faAction);
     const tfaCode = await this.ioInput('Please enter the 2fa code => ');
-    await page.focus('input[autocomplete=one-time-code]');
-    await page.type('input[autocomplete=one-time-code]', tfaCode);
-
-    this.takeScreenshot(page, '2fa-filled');
+    await this.type(page, this.elementIDs.fields['2faCode'], tfaCode);
 
     await page.waitForNavigation();
-    await page.waitForSelector('div[id=my-profile-header]');
+    await page.waitForSelector(this.elementIDs.section.profileHeader);
 
     // Save the cookies
     this.saveCookies(page);
-
-    this.takeScreenshot(page, '2fa-finish-logged-in');
   }
 
   async storeHomepage(page: Page) {
